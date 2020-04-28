@@ -1,0 +1,23 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t vipul2605/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true vipul2605/react-test npm test
+
+after_success:
+  - docker build -t vipul2605/multi-client ./client
+  - docker build -t vipul2605/multi-nginx ./nginx
+  - docker build -t vipul2605/multi-server ./server
+  - docker build -t vipul2605/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push vipul2605/multi-client
+  - docker push vipul2605/multi-nginx
+  - docker push vipul2605/multi-server
+  - docker push vipul2605/multi-worker
